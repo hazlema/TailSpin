@@ -1,0 +1,66 @@
+[
+  {
+    "description": "A centered card with padding and shadow",
+    "targetClasses": "mx-auto p-6 shadow-lg",
+    "options": [
+      "mx-auto p-6 shadow-lg",
+      "text-center p-6 drop-shadow",
+      "center padding-6 box-shadow",
+      "m-auto pad-6 shadow"
+    ],
+    "correct": 0,
+    "preview": {
+      "element": "div",
+      "content": "Sample Card",
+      "classes": "mx-auto p-6 shadow-lg bg-white rounded-lg max-w-sm"
+    }
+  },
+  {
+    "description": "A blue button with rounded corners and hover effect",
+    "targetClasses": "bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded",
+    "options": [
+      "bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded",
+      "background-blue color-white padding-x-4 padding-y-2 border-radius",
+      "blue-bg white-text pad-4-2 rounded-corners hover-dark",
+      "btn-blue text-white p-4 round"
+    ],
+    "correct": 0,
+    "preview": {
+      "element": "button",
+      "content": "Click me",
+      "classes": "bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+    }
+  },
+  {
+    "description": "A flex container with items centered vertically and horizontally",
+    "targetClasses": "flex items-center justify-center",
+    "options": [
+      "display-flex align-center justify-center",
+      "flex items-center justify-center",
+      "flexbox center-items center-justify",
+      "d-flex align-middle text-center"
+    ],
+    "correct": 1,
+    "preview": {
+      "element": "div",
+      "content": "Centered Content",
+      "classes": "flex items-center justify-center h-24 bg-gray-100 rounded"
+    }
+  },
+  {
+    "description": "Text that is large, bold, and has margin bottom",
+    "targetClasses": "text-2xl text-gray-600 font-bold mb-4",
+    "options": [
+      "font-size-2xl font-weight-bold margin-bottom-4",
+      "text-2xl font-bold mb-4",
+      "large-text bold-font bottom-margin-4",
+      "size-xl weight-bold space-bottom-4"
+    ],
+    "correct": 1,
+    "preview": {
+      "element": "h2",
+      "content": "Large Bold Heading",
+      "classes": "text-2xl font-bold mb-4"
+    }
+  }
+]

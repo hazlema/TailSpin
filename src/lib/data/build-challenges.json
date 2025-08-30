@@ -1,0 +1,56 @@
+[
+  {
+    "title": "Create a Navigation Bar",
+    "description": "Build a responsive navigation bar with logo and menu items",
+    "steps": [
+      {
+        "instruction": "Start with a flex container that takes full width",
+        "requiredPatterns": ["flex", "w-"],
+        "expectedClass": "flex w-full",
+        "targetDesign": "flex w-full bg-gray-800 px-6 py-4 items-center justify-between text-black",
+        "hint": "Use 'flex' for flexbox and any 'w-*' class for width (e.g., w-full)"
+      },
+      {
+        "instruction": "Add padding and background color",
+        "requiredPatterns": ["flex", "w-", "px-", "py-", "bg-"],
+        "expectedClass": "flex w-full px-6 py-4 bg-gray-800",
+        "targetDesign": "flex w-full bg-gray-800 px-6 py-4 items-center justify-between text-white",
+        "hint": "Add horizontal padding (px-*), vertical padding (py-*), and any background color (bg-*)"
+      },
+      {
+        "instruction": "Center items vertically and space them apart",
+        "requiredPatterns": ["flex", "w-", "px-", "py-", "bg-", "items-center", "justify-between"],
+        "expectedClass": "flex w-full px-6 py-4 bg-gray-800 items-center justify-between",
+        "targetDesign": "flex w-full bg-gray-800 px-6 py-4 items-center justify-between text-white",
+        "hint": "Add 'items-center' to center vertically and 'justify-between' to space items apart"
+      }
+    ]
+  },
+  {
+    "title": "Create a Card Component",
+    "description": "Build a modern card with shadow and rounded corners",
+    "steps": [
+      {
+        "instruction": "Start with basic padding and background",
+        "requiredPatterns": ["p-", "bg-"],
+        "expectedClass": "p-6 bg-white",
+        "targetDesign": "p-6 bg-white rounded-lg shadow-lg max-w-md mx-auto text-black",
+        "hint": "Use any padding class (p-*) and any background class (bg-*)"
+      },
+      {
+        "instruction": "Add rounded corners and shadow",
+        "requiredPatterns": ["p-", "bg-", "rounded", "shadow"],
+        "expectedClass": "p-6 bg-white rounded-lg shadow-lg",
+        "targetDesign": "p-6 bg-white rounded-lg shadow-lg max-w-md mx-auto text-black",
+        "hint": "Add any rounded class (rounded-* or just 'rounded') and any shadow class (shadow-*)"
+      },
+      {
+        "instruction": "Make it responsive with max width and center it",
+        "requiredPatterns": ["p-", "bg-", "rounded", "shadow", "max-w-", "mx-auto"],
+        "expectedClass": "p-6 bg-white rounded-lg shadow-lg max-w-md mx-auto",
+        "targetDesign": "p-6 bg-white rounded-lg shadow-lg max-w-md mx-auto text-black",
+        "hint": "Add any max-width class (max-w-*) and 'mx-auto' for centering"
+      }
+    ]
+  }
+]

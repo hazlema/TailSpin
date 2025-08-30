@@ -1,0 +1,42 @@
+[
+  {
+    "question": "Which class centers an element horizontally?",
+    "options": ["mx-auto", "text-center", "center", "h-center"],
+    "correct": 0
+  },
+  {
+    "question": "What does 'bg-blue-500' do?",
+    "options": ["Sets blue border", "Sets blue text", "Sets blue background", "Sets blue shadow"],
+    "correct": 2
+  },
+  {
+    "question": "Which class makes text bold?",
+    "options": ["font-bold", "text-bold", "weight-bold", "bold"],
+    "correct": 0
+  },
+  {
+    "question": "How do you hide an element?",
+    "options": ["display-none", "hidden", "invisible", "hide"],
+    "correct": 1
+  },
+  {
+    "question": "Which class adds padding of 4 units on all sides?",
+    "options": ["p-4", "padding-4", "pad-4", "space-4"],
+    "correct": 0
+  },
+  {
+    "question": "What does 'flex justify-center' do?",
+    "options": ["Centers flex items vertically", "Centers flex items horizontally", "Centers the flex container", "Makes items flexible"],
+    "correct": 1
+  },
+  {
+    "question": "Which class makes text uppercase?",
+    "options": ["text-upper", "uppercase", "text-uppercase", "caps"],
+    "correct": 1
+  },
+  {
+    "question": "How do you make a rounded button?",
+    "options": ["border-rounded", "rounded", "round", "radius"],
+    "correct": 1
+  }
+]
