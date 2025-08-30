@@ -1,169 +1,59 @@
 /**
- * Utility class for validating Tailwind CSS classes with flexible matching
+ * Simplified Tailwind CSS validator using answer-based validation
  */
 export class TailwindValidator {
   
   /**
-   * Parses a class string and categorizes the classes
-   * @param classString - Space-separated string of CSS classes
-   * @returns Object with categorized classes
+   * Validates user input against a set of correct answers
+   * @param userInput - User's class string
+   * @param correctAnswers - Array of possible correct class combinations
+   * @returns Whether the input matches any correct answer
    */
-  static parseClasses(classString: string): Record<string, string[]> {
-    const classes = classString.trim().toLowerCase().split(/\s+/).filter(Boolean);
-    const categories: Record<string, string[]> = {};
+  static validateAgainstAnswers(userInput: string, correctAnswers: string[]): boolean {
+    const normalizedInput = userInput.trim().toLowerCase().split(/\s+/).sort().join(' ');
     
-    for (const cls of classes) {
-      // Background classes
-      if (cls.startsWith('bg-')) {
-        if (!categories.background) categories.background = [];
-        categories.background.push(cls);
-      }
-      
-      // Padding classes
-      else if (cls.match(/^p[xylrtb]?-/)) {
-        if (!categories.padding) categories.padding = [];
-        categories.padding.push(cls);
-      }
-      
-      // Margin classes  
-      else if (cls.match(/^m[xylrtb]?-/)) {
-        if (!categories.margin) categories.margin = [];
-        categories.margin.push(cls);
-      }
-      
-      // Width classes
-      else if (cls.startsWith('w-') || cls === 'w-full' || cls === 'w-auto') {
-        if (!categories.width) categories.width = [];
-        categories.width.push(cls);
-      }
-      
-      // Height classes
-      else if (cls.startsWith('h-') || cls === 'h-full' || cls === 'h-auto') {
-        if (!categories.height) categories.height = [];
-        categories.height.push(cls);
-      }
-      
-      // Flexbox layout
-      else if (cls === 'flex' || cls === 'inline-flex') {
-        if (!categories.display) categories.display = [];
-        categories.display.push(cls);
-      }
-      
-      // Flex direction, alignment, justify
-      else if (cls.match(/^(flex-|items-|justify-|content-|self-)/)) {
-        if (!categories.flex) categories.flex = [];
-        categories.flex.push(cls);
-      }
-      
-      // Grid classes
-      else if (cls.match(/^(grid|grid-)/)) {
-        if (!categories.grid) categories.grid = [];
-        categories.grid.push(cls);
-      }
-      
-      // Text styling
-      else if (cls.match(/^(text-|font-|leading-|tracking-|uppercase|lowercase|capitalize)/)) {
-        if (!categories.text) categories.text = [];
-        categories.text.push(cls);
-      }
-      
-      // Border and rounded
-      else if (cls.match(/^(border|rounded)/)) {
-        if (!categories.border) categories.border = [];
-        categories.border.push(cls);
-      }
-      
-      // Shadow
-      else if (cls.match(/^shadow/)) {
-        if (!categories.shadow) categories.shadow = [];
-        categories.shadow.push(cls);
-      }
-      
-      // Position
-      else if (cls.match(/^(relative|absolute|fixed|static|sticky)/)) {
-        if (!categories.position) categories.position = [];
-        categories.position.push(cls);
-      }
-      
-      // Display (other than flex)
-      else if (cls.match(/^(block|inline|hidden|invisible)/)) {
-        if (!categories.display) categories.display = [];
-        categories.display.push(cls);
-      }
-      
-      // Overflow
-      else if (cls.match(/^overflow/)) {
-        if (!categories.overflow) categories.overflow = [];
-        categories.overflow.push(cls);
-      }
-      
-      // Transform and transitions
-      else if (cls.match(/^(transform|transition|duration|ease|animate)/)) {
-        if (!categories.animation) categories.animation = [];
-        categories.animation.push(cls);
-      }
-      
-      // Misc/other classes
-      else {
-        if (!categories.misc) categories.misc = [];
-        categories.misc.push(cls);
-      }
-    }
-    
-    return categories;
+    return correctAnswers.some(answer => {
+      const normalizedAnswer = answer.trim().toLowerCase().split(/\s+/).sort().join(' ');
+      return normalizedInput === normalizedAnswer;
+    });
   }
   
   /**
-   * Validates if user input contains required class categories
-   * @param userInput - User's class string
-   * @param requirements - Required class categories and optionally specific values
-   * @returns Object with validation result and feedback
+   * Validates if user input contains all required patterns from answers
+   * @param userInput - User's class string  
+   * @param correctAnswers - Array of correct answers to extract patterns from
+   * @returns Whether all required patterns are found
    */
-  static validateClasses(
-    userInput: string, 
-    requirements: {
-      [category: string]: {
-        required: boolean;
-        specificValues?: string[];
-        description?: string;
-      }
-    }
-  ): {
-    isValid: boolean;
-    missing: string[];
-    feedback: string;
-  } {
-    const userCategories = this.parseClasses(userInput);
-    const missing: string[] = [];
+  static containsRequiredPatterns(userInput: string, correctAnswers: string[]): boolean {
+    const normalizedInput = userInput.trim().toLowerCase();
+    const userClasses = normalizedInput.split(/\s+/).filter(Boolean);
     
-    for (const [category, config] of Object.entries(requirements)) {
-      if (!config.required) continue;
-      
-      const userHasCategory = userCategories[category] && userCategories[category].length > 0;
-      
-      if (!userHasCategory) {
-        missing.push(config.description || category);
-        continue;
-      }
-      
-      // Check for specific values if required
-      if (config.specificValues && config.specificValues.length > 0) {
-        const hasRequiredValue = userCategories[category].some(userClass => 
-          config.specificValues!.some(required => userClass.includes(required))
-        );
-        
-        if (!hasRequiredValue) {
-          missing.push(`${config.description || category} (specific value required)`);
+    // Extract all unique class patterns from correct answers
+    const requiredPatterns = new Set<string>();
+    
+    correctAnswers.forEach(answer => {
+      answer.trim().toLowerCase().split(/\s+/).forEach(twClass => {
+        if (twClass.includes('-')) {
+          // Extract base pattern (e.g., 'px-4' -> 'px-')
+          const [base] = twClass.split('-');
+          requiredPatterns.add(base + '-');
+        } else {
+          // Exact class (e.g., 'flex')
+          requiredPatterns.add(twClass);
         }
+      });
+    });
+    
+    // Check if user input contains all required patterns
+    return Array.from(requiredPatterns).every(pattern => {
+      if (pattern.endsWith('-')) {
+        // Pattern matching (e.g., user has any 'px-*' class)
+        return userClasses.some(cls => cls.startsWith(pattern));
+      } else {
+        // Exact matching (e.g., user has 'flex')
+        return userClasses.includes(pattern);
       }
-    }
-    
-    const isValid = missing.length === 0;
-    const feedback = isValid 
-      ? "Perfect!" 
-      : `Missing: ${missing.join(', ')}`;
-    
-    return { isValid, missing, feedback };
+    });
   }
   
   /**
@@ -193,7 +83,42 @@ export class TailwindValidator {
   }
   
   /**
-   * Gets a human-readable description of what's missing
+   * Gets a human-readable description of what's missing based on correct answers
+   * @param userInput - User's class string
+   * @param correctAnswers - Array of correct answers
+   * @returns Description of missing elements
+   */
+  static getMissingFromAnswers(userInput: string, correctAnswers: string[]): string {
+    const normalizedInput = userInput.trim().toLowerCase();
+    const userClasses = normalizedInput.split(/\s+/).filter(Boolean);
+    
+    // Get the first correct answer as reference for feedback
+    const referenceAnswer = correctAnswers[0];
+    const requiredClasses = referenceAnswer.trim().toLowerCase().split(/\s+/);
+    
+    const missing: string[] = [];
+    
+    requiredClasses.forEach(requiredClass => {
+      if (requiredClass.includes('-')) {
+        // Pattern-based class (e.g., 'px-4')
+        const [pattern] = requiredClass.split('-');
+        const hasPattern = userClasses.some(cls => cls.startsWith(pattern + '-'));
+        if (!hasPattern) {
+          missing.push(`${pattern}-* class (e.g., ${requiredClass})`);
+        }
+      } else {
+        // Exact class (e.g., 'flex')
+        if (!userClasses.includes(requiredClass)) {
+          missing.push(`'${requiredClass}' class`);
+        }
+      }
+    });
+    
+    return missing.length > 0 ? `Missing: ${missing.join(', ')}` : 'Perfect!';
+  }
+  
+  /**
+   * Legacy method for backward compatibility
    * @param userInput - User's class string
    * @param requiredPatterns - Required patterns
    * @returns Description of missing elements
@@ -211,11 +136,9 @@ export class TailwindValidator {
           // Generate appropriate examples based on the pattern
           let example = '';
           if (pattern.match(/^p[xylrtb]?-$/)) {
-            // Padding patterns: px-, py-, pl-, pr-, pt-, pb-, p-
             const paddingValues = ['4', '6', '8'];
             example = `${pattern}${paddingValues[Math.floor(Math.random() * paddingValues.length)]}`;
           } else if (pattern.match(/^m[xylrtb]?-$/)) {
-            // Margin patterns: mx-, my-, ml-, mr-, mt-, mb-, m-
             if (pattern === 'mx-') {
               example = `${pattern}auto`;
             } else {
@@ -245,14 +168,12 @@ export class TailwindValidator {
           missing.push(`${pattern}* class (e.g., ${example})`);
         }
       } else {
-        // Check if pattern should match variations
         if (pattern === 'rounded' || pattern === 'shadow') {
           found = normalizedInput.split(/\s+/).some(cls => cls.startsWith(pattern));
           if (!found) {
             missing.push(`${pattern} class (e.g., ${pattern}-lg)`);
           }
         } else {
-          // Exact match for patterns like 'flex', 'items-center'
           found = normalizedInput.split(/\s+/).includes(pattern);
           if (!found) {
             missing.push(`'${pattern}' class`);

@@ -23,12 +23,12 @@
     const currentStep = buildChallenges[currentBuildIndex].steps[currentStepIndex];
     const userInput = buildInput.trim();
     
-    // Use flexible validation if requiredPatterns exist, otherwise fall back to exact match
+    // Build mode should use flexible pattern validation, not exact matching
     let isCorrect = false;
     let feedback = "";
     
     if (currentStep.requiredPatterns) {
-      // Use flexible validation
+      // Use pattern-based validation for flexibility
       isCorrect = TailwindValidator.containsPatterns(userInput, currentStep.requiredPatterns);
       
       if (isCorrect) {
@@ -37,11 +37,15 @@
         feedback = TailwindValidator.getMissingDescription(userInput, currentStep.requiredPatterns);
       }
     } else {
-      // Fall back to exact match for older challenges
-      const normalizedInput = userInput.toLowerCase();
-      const normalizedExpected = currentStep.expectedClass.toLowerCase();
-      isCorrect = normalizedInput === normalizedExpected;
-      feedback = isCorrect ? "Correct! 🎉" : "Not quite right. Try again!";
+      // Fallback to exact match if no patterns defined
+      const correctAnswers = [currentStep.expectedClass];
+      isCorrect = TailwindValidator.validateAgainstAnswers(userInput, correctAnswers);
+      
+      if (isCorrect) {
+        feedback = "Perfect! 🎉";
+      } else {
+        feedback = TailwindValidator.getMissingFromAnswers(userInput, correctAnswers);
+      }
     }
     
     buildFeedback = feedback;
@@ -85,6 +89,16 @@
   
   function toggleBuildHint() {
     showBuildHint = !showBuildHint;
+  }
+  
+  function skipQuestion() {
+    const currentStep = buildChallenges[currentBuildIndex].steps[currentStepIndex];
+    buildInput = currentStep.expectedClass;
+    buildFeedback = "Auto-filled for debugging! 🐛";
+    
+    setTimeout(() => {
+      checkBuildAnswer();
+    }, 500);
   }
   
 </script>
@@ -151,7 +165,7 @@
                 placeholder="e.g. flex items-center px-4"
                 class="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:border-white/40 focus:outline-none font-mono text-sm">
               
-              <div class="flex space-x-3">
+              <div class="flex space-x-3 flex-wrap">
                 <button 
                   onclick={checkBuildAnswer}
                   class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">
@@ -161,6 +175,11 @@
                   onclick={toggleBuildHint}
                   class="px-6 py-2 bg-white/10 hover:bg-white/15 text-white rounded-lg transition-colors border border-white/20">
                   {showBuildHint ? 'Hide Hint' : 'Show Hint'}
+                </button>
+                <button 
+                  onclick={skipQuestion}
+                  class="px-6 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors">
+                  🐛 Skip (Debug)
                 </button>
               </div>
               

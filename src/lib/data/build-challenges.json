@@ -7,7 +7,7 @@
         "instruction": "Start with a flex container that takes full width",
         "requiredPatterns": ["flex", "w-"],
         "expectedClass": "flex w-full",
-        "targetDesign": "flex w-full bg-gray-800 px-6 py-4 items-center justify-between text-black",
+        "targetDesign": "",
         "hint": "Use 'flex' for flexbox and any 'w-*' class for width (e.g., w-full)"
       },
       {
@@ -34,7 +34,7 @@
         "instruction": "Start with basic padding and background",
         "requiredPatterns": ["p-", "bg-"],
         "expectedClass": "p-6 bg-white",
-        "targetDesign": "p-6 bg-white rounded-lg shadow-lg max-w-md mx-auto text-black",
+        "targetDesign": "p-6 bg-white text-black",
         "hint": "Use any padding class (p-*) and any background class (bg-*)"
       },
       {
