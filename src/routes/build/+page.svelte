@@ -18,10 +18,16 @@
   let showBuildHint = $state(false);
   let fireworksCounter = $state(0);
   let showCompletionCard = $state(false);
+  let previousClasses = $state(""); // Track previous step's classes
+  let showIntro = $state(true); // Show intro card at start of each challenge
+  
+  // Debug mode - only show in development
+  let isDebugMode = $state(import.meta.env.DEV);
   
   function checkBuildAnswer() {
     const currentStep = buildChallenges[currentBuildIndex].steps[currentStepIndex];
-    const userInput = buildInput.trim();
+    // Combine previous classes with current input for validation
+    const fullInput = previousClasses ? `${previousClasses} ${buildInput.trim()}`.trim() : buildInput.trim();
     
     // Build mode should use flexible pattern validation, not exact matching
     let isCorrect = false;
@@ -29,22 +35,22 @@
     
     if (currentStep.requiredPatterns) {
       // Use pattern-based validation for flexibility
-      isCorrect = TailwindValidator.containsPatterns(userInput, currentStep.requiredPatterns);
+      isCorrect = TailwindValidator.containsPatterns(fullInput, currentStep.requiredPatterns);
       
       if (isCorrect) {
         feedback = "Perfect! 🎉";
       } else {
-        feedback = TailwindValidator.getMissingDescription(userInput, currentStep.requiredPatterns);
+        feedback = TailwindValidator.getMissingDescription(fullInput, currentStep.requiredPatterns);
       }
     } else {
       // Fallback to exact match if no patterns defined
       const correctAnswers = [currentStep.expectedClass];
-      isCorrect = TailwindValidator.validateAgainstAnswers(userInput, correctAnswers);
+      isCorrect = TailwindValidator.validateAgainstAnswers(fullInput, correctAnswers);
       
       if (isCorrect) {
         feedback = "Perfect! 🎉";
       } else {
-        feedback = TailwindValidator.getMissingFromAnswers(userInput, correctAnswers);
+        feedback = TailwindValidator.getMissingFromAnswers(fullInput, correctAnswers);
       }
     }
     
@@ -65,21 +71,31 @@
   
   function nextBuildStep() {
     if (currentStepIndex < buildChallenges[currentBuildIndex].steps.length - 1) {
+      // Moving to next step within same challenge - keep current input as starting point
+      const currentInput = buildInput.trim();
+      previousClasses = currentInput; // Store as previous classes
       currentStepIndex++;
-      buildInput = "";
+      buildInput = ""; // Clear input for new classes
       buildFeedback = "";
       showBuildHint = false;
     } else if (currentBuildIndex < buildChallenges.length - 1) {
+      // Moving to next challenge - reset everything
       currentBuildIndex++;
       currentStepIndex = 0;
+      previousClasses = "";
       buildInput = "";
       buildFeedback = "";
       showBuildHint = false;
+      showIntro = true; // Show intro for new challenge
     } else {
       // All challenges completed - show completion card
       showCompletionCard = true;
       fireworksCounter++; // Trigger celebration fireworks
     }
+  }
+  
+  function startBuilding() {
+    showIntro = false;
   }
   
   function finishBuildMode() {
@@ -132,19 +148,54 @@
       <div class="flex justify-between items-center mb-8">
         <button onclick={() => goto('/')} class="btn btn-outline">← Back to Menu</button>
         <div class="text-white">
-          {buildChallenges[currentBuildIndex].title} - Step {currentStepIndex + 1}/{buildChallenges[currentBuildIndex].steps.length}
+          {showIntro ? buildChallenges[currentBuildIndex].title : `${buildChallenges[currentBuildIndex].title} - Step ${currentStepIndex + 1}/${buildChallenges[currentBuildIndex].steps.length}`}
         </div>
       </div>
       
-      <!-- Progress Bar -->
-      <div class="bg-white/10 rounded-full h-2 mb-8">
-        <div 
-          class="bg-gradient-to-r from-purple-400 to-pink-400 h-2 rounded-full transition-all duration-300"
-          style="width: {((currentStepIndex + 1) / buildChallenges[currentBuildIndex].steps.length) * 100}%">
+      <!-- Challenge Introduction Card -->
+      {#if showIntro}
+        <div class="bg-gradient-to-br from-purple-500/20 to-blue-500/20 backdrop-blur-sm border border-purple-400/30 rounded-xl p-8 mb-8 text-center">
+          <div class="mb-6">
+            <h2 class="text-3xl font-bold text-white mb-4">{buildChallenges[currentBuildIndex].title}</h2>
+            <p class="text-xl text-gray-200 mb-6">{buildChallenges[currentBuildIndex].description}</p>
+          </div>
+          
+          <div class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-6 mb-6">
+            <h3 class="text-lg font-semibold text-white mb-4">🎯 What You'll Build</h3>
+            <p class="text-gray-300 mb-4">
+              You'll create this {buildChallenges[currentBuildIndex].title.toLowerCase()} step by step. 
+              This challenge has <span class="font-bold text-cyan-400">{buildChallenges[currentBuildIndex].steps.length} steps</span> - 
+              we'll build it piece by piece until the design is complete.
+            </p>
+            <div class="flex items-center justify-center gap-2 text-sm text-gray-400">
+              {#each buildChallenges[currentBuildIndex].steps as step, index}
+                <div class="bg-white/10 px-3 py-1 rounded-full">Step {index + 1}</div>
+                {#if index < buildChallenges[currentBuildIndex].steps.length - 1}
+                  <div class="text-white/40">→</div>
+                {/if}
+              {/each}
+            </div>
+          </div>
+          
+          <button 
+            onclick={startBuilding}
+            class="px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105">
+            Start Building! 🚀
+          </button>
         </div>
-      </div>
+      {/if}
       
-      <div class="grid lg:grid-cols-2 gap-8">
+      <!-- Build Interface - Hidden during intro -->
+      {#if !showIntro}
+        <!-- Progress Bar -->
+        <div class="bg-white/10 rounded-full h-2 mb-8">
+          <div 
+            class="bg-gradient-to-r from-purple-400 to-pink-400 h-2 rounded-full transition-all duration-300"
+            style="width: {((currentStepIndex + 1) / buildChallenges[currentBuildIndex].steps.length) * 100}%">
+          </div>
+        </div>
+        
+        <div class="grid lg:grid-cols-2 gap-8">
         
         <!-- Left Side: Instructions -->
         <div>
@@ -157,13 +208,40 @@
             
             <!-- Input Field -->
             <div class="space-y-4">
-              <label for="build-input" class="block text-sm text-gray-300">Enter your Tailwind classes:</label>
-              <input
-                id="build-input" 
-                bind:value={buildInput}
-                onkeydown={(e) => e.key === 'Enter' && checkBuildAnswer()}
-                placeholder="e.g. flex items-center px-4"
-                class="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:border-white/40 focus:outline-none font-mono text-sm">
+              <label for="build-input" class="block text-sm text-gray-300">
+                {previousClasses ? 'Add more classes to build on your previous work:' : 'Enter your Tailwind classes:'}
+              </label>
+              
+              {#if previousClasses}
+                <!-- Visual separation: Previous classes + New input -->
+                <div class="space-y-3">
+                  <!-- Previous Response Box -->
+                  <div class="max-w-lg bg-green-500/20 border border-green-400/30 rounded-lg px-3 py-2 text-green-200 font-mono text-sm">
+                    <div class="break-words">{previousClasses}
+				<span class="text-white/60 font-bold text-lg flex-shrink-0">+</span>
+				</div>
+                  </div>
+                  
+                  <!-- Plus sign and New Input -->
+                  <div class="flex items-center gap-2">
+                    
+                    <input
+                      id="build-input" 
+                      bind:value={buildInput}
+                      onkeydown={(e) => e.key === 'Enter' && checkBuildAnswer()}
+                      placeholder="e.g. items-center justify-between"
+                      class="flex-1 p-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:border-white/40 focus:outline-none font-mono text-sm">
+                  </div>
+                </div>
+              {:else}
+                <!-- Single input for first step -->
+                <input
+                  id="build-input" 
+                  bind:value={buildInput}
+                  onkeydown={(e) => e.key === 'Enter' && checkBuildAnswer()}
+                  placeholder="e.g. flex w-full"
+                  class="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:border-white/40 focus:outline-none font-mono text-sm">
+              {/if}
               
               <div class="flex space-x-3 flex-wrap">
                 <button 
@@ -176,11 +254,13 @@
                   class="px-6 py-2 bg-white/10 hover:bg-white/15 text-white rounded-lg transition-colors border border-white/20">
                   {showBuildHint ? 'Hide Hint' : 'Show Hint'}
                 </button>
-                <button 
-                  onclick={skipQuestion}
-                  class="px-6 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors">
-                  🐛 Skip (Debug)
-                </button>
+                {#if isDebugMode}
+                  <button 
+                    onclick={skipQuestion}
+                    class="px-6 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors">
+                    🐛 Skip (Debug)
+                  </button>
+                {/if}
               </div>
               
               <!-- Feedback -->
@@ -254,27 +334,37 @@
               <div class="bg-gray-50 p-6 rounded-lg min-h-48">
                 
                 {#if buildChallenges[currentBuildIndex].title.includes('Navigation')}
-                  <div class={buildInput ? `${buildInput} text-black` : "w-full bg-gray-100 h-16 text-black"}>
+                  {@const currentClasses = previousClasses ? (buildInput ? `${previousClasses} ${buildInput} text-black`.trim() : `${previousClasses} text-black`.trim()) : (buildInput ? `${buildInput} text-black` : "w-full bg-gray-100 h-16 text-black")}
+                  <div class={currentClasses}>
                     <div class="text-lg font-bold">Logo</div>
                     <div>Menu Item 1</div>
                     <div>Menu Item 2</div>
                   </div>
                 {:else if buildChallenges[currentBuildIndex].title.includes('Card')}
-                  <div class={buildInput ? `${buildInput} text-black` : "bg-gray-100 p-4 text-black"}>
+                  {@const currentClasses = previousClasses ? (buildInput ? `${previousClasses} ${buildInput} text-black`.trim() : `${previousClasses} text-black`.trim()) : (buildInput ? `${buildInput} text-black` : "bg-gray-100 p-4 text-black")}
+                  <div class={currentClasses}>
                     <h3 class="text-lg font-bold mb-2">Card Title</h3>
                     <p class="text-gray-600">This is some card content to demonstrate the styling.</p>
                   </div>
                 {:else}
-                  <div class={buildInput ? `${buildInput} text-black` : "bg-gray-100 p-4 text-black"}>
+                  {@const currentClasses = previousClasses ? (buildInput ? `${previousClasses} ${buildInput} text-black`.trim() : `${previousClasses} text-black`.trim()) : (buildInput ? `${buildInput} text-black` : "bg-gray-100 p-4 text-black")}
+                  <div class={currentClasses}>
                     Preview Element
                   </div>
                 {/if}
                 
               </div>
               
-              {#if buildInput}
-                <div class="mt-4 p-3 bg-gray-800 rounded text-xs text-gray-300 font-mono">
-                  Current classes: <span class="text-yellow-300">{buildInput}</span>
+              {#if previousClasses || buildInput}
+                <div class="mt-4 p-3 bg-gray-800 rounded text-xs text-gray-300 font-mono space-y-1">
+                  {#if previousClasses && buildInput}
+                    <div>Previous: <span class="text-green-300">{previousClasses}</span></div>
+                    <div>Current: <span class="text-yellow-300">{buildInput}</span></div>
+                  {:else if previousClasses}
+                    <div>Classes: <span class="text-green-300">{previousClasses}</span></div>
+                  {:else if buildInput}
+                    <div>Classes: <span class="text-yellow-300">{buildInput}</span></div>
+                  {/if}
                 </div>
               {/if}
             </div>
@@ -282,7 +372,8 @@
           
         </div>
         
-      </div>
+        </div>
+      {/if}
     </div>
   </div>
 </div>
