@@ -71,9 +71,10 @@
   
   function nextBuildStep() {
     if (currentStepIndex < buildChallenges[currentBuildIndex].steps.length - 1) {
-      // Moving to next step within same challenge - keep current input as starting point
+      // Moving to next step within same challenge - accumulate all previous classes
       const currentInput = buildInput.trim();
-      previousClasses = currentInput; // Store as previous classes
+      // Combine previous classes with current input for cumulative effect
+      previousClasses = previousClasses ? `${previousClasses} ${currentInput}`.trim() : currentInput;
       currentStepIndex++;
       buildInput = ""; // Clear input for new classes
       buildFeedback = "";
